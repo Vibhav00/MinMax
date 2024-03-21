@@ -4,7 +4,7 @@
 [![platform](https://img.shields.io/badge/algo-minmax-green.svg)](https://www.android.com)
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
 
-An awesome Android Game build with min-max algorith and kotlin 🤩🎮🎲
+An awesome Android Game build with min-max algorithm and kotlin 🤩🎮🎲
 
 <img src="./pictures/pic1.jpg" alt="drawing" width="200"/>
 
