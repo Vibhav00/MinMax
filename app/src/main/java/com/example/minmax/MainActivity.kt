@@ -9,17 +9,19 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.reflect.Array
+
 
 class MainActivity : AppCompatActivity() {
-    var arr = arrayOf(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ')
-    var no = 1;
-    val bot = 'x'
-    val pla = '0'
-    var aimode = false
+    private var arr = arrayOf(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ')
+    private var no = 1
+    private val bot = 'x'
+    private val pla = '0'
+    private var aimode = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        setButtonTextSize(50f)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
@@ -33,7 +35,6 @@ class MainActivity : AppCompatActivity() {
             if (checkedid == R.id.twoplayer) {
 //                makeVisibleMetricUnitsView()
                 twoPlayerMode()
-
             } else {
 //                makeVisibleUSUnitsView()
                 aiMode()
@@ -47,43 +48,49 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun twoPlayerMode() {
+    private fun twoPlayerMode() {
         aimode = false
         clearAndSetup()
         setClickable(true)
         Toast.makeText(this, "TWO PLAYER MODE", Toast.LENGTH_SHORT).show()
-
     }
 
-    fun aiMode() {
+    private fun aiMode() {
         aimode = true
         clearAndSetup()
         setClickable(true)
         Toast.makeText(this, "AI MODE ", Toast.LENGTH_SHORT).show()
-
     }
 
-    fun onclick(view: android.view.View) {
+    fun onclick(view: View) {
+        if ((view as Button).text.isNotEmpty()) {
+            // Button is already clicked, return immediately
+            return
+        }
+
         if (aimode) {
-            (view as Button).text = "0"
+            view.text = "0"
+            view.isClickable = false  // Disable the button after clicking
             val position = view.tag.toString().toInt()
             arr[position] = '0'
+
             if (chekWhoWon(pla)) {
                 Toast.makeText(this, "0 WON ", Toast.LENGTH_SHORT).show()
                 btnrestart.visibility = View.VISIBLE
                 setClickable(false)
+            } else {
+                no++
+                comMove()
+                if (chekWhoWon(bot)) {
+                    Toast.makeText(this, "X WON ", Toast.LENGTH_SHORT).show()
+                    btnrestart.visibility = View.VISIBLE
+                    setClickable(false)
+                }
             }
-            no++;
-            comMove()
-            if (chekWhoWon(bot)) {
-                Toast.makeText(this, "X WON ", Toast.LENGTH_SHORT).show()
-                btnrestart.visibility = View.VISIBLE
-                setClickable(false)
-            }
-
         } else {
             if (no % 2 == 0) {
-                (view as Button).text = "0"
+                view.text = "0"
+                view.isClickable = false  // Disable the button after clicking
                 val position = view.tag.toString().toInt()
                 arr[position] = '0'
                 if (checkIfWon()) {
@@ -91,15 +98,10 @@ class MainActivity : AppCompatActivity() {
                     btnrestart.visibility = View.VISIBLE
                     setClickable(false)
                 }
-                no++;
-//                comMove()
-//                if (chekWhoWon(bot)) {
-//                    Toast.makeText(this, "x won ", Toast.LENGTH_SHORT).show()
-//                    clearAndSetup()
-//                }
-
+                no++
             } else {
-                (view as Button).text = "x"
+                view.text = "x"
+                view.isClickable = false  // Disable the button after clicking
                 val position = view.tag.toString().toInt()
                 arr[position] = 'x'
                 if (checkIfWon()) {
@@ -107,11 +109,10 @@ class MainActivity : AppCompatActivity() {
                     btnrestart.visibility = View.VISIBLE
                     setClickable(false)
                 }
-                no++;
-
+                no++
             }
-
         }
+
         if (checkForDraw()) {
             Toast.makeText(this, "MATCH DRAW ", Toast.LENGTH_SHORT).show()
             btnrestart.visibility = View.VISIBLE
@@ -119,7 +120,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun clearAndSetup() {
+
+    private fun clearAndSetup() {
         arr = arrayOf(' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ')
         id0.text = ""
         id1.text = ""
@@ -132,11 +134,11 @@ class MainActivity : AppCompatActivity() {
         id8.text = ""
         no = 1
 //        comMove()
-
+        setButtonTextSize(50f)
     }
 
 
-    fun checkForDraw(): Boolean {
+    private fun checkForDraw(): Boolean {
         for (i in arr) {
             if (i == ' ') {
                 return false
@@ -145,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    fun checkIfWon(): Boolean {
+    private fun checkIfWon(): Boolean {
         if (arr[0] == arr[1] && arr[1] == arr[2] && arr[0] != ' ')
             return true
         if (arr[3] == arr[4] && arr[4] == arr[5] && arr[3] != ' ')
@@ -165,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    fun chekWhoWon(mark: Char): Boolean {
+    private fun chekWhoWon(mark: Char): Boolean {
         if (arr[0] == arr[1] && arr[1] == arr[2] && arr[0] == mark)
             return true
         if (arr[3] == arr[4] && arr[4] == arr[5] && arr[3] == mark)
@@ -186,26 +188,40 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun comMove() {
+    private fun comMove() {
         var bestscore = -1000
-        var bestmove = 0
-        for (i in arr.indices) {
+        var bestmove = -1  // Initialize to -1 to catch any errors
 
-            if (arr[i] == ' ') {
+        for (i in arr.indices) {
+            if (arr[i] == ' ') {  // Only consider empty spots
                 arr[i] = bot
                 val score = minimax(false)
                 arr[i] = ' '
-                Log.e("vibhavkumar", "${i}=${score}")
+                Log.e("AI Move", "Position: ${i}, Score: ${score}")
+
                 if (score > bestscore) {
                     bestscore = score
                     bestmove = i
                 }
             }
         }
-        insertLetter(bot, bestmove)
+
+        if (bestmove != -1) {  // Ensure a valid move is found
+            insertLetter(bot, bestmove)
+        } else {
+            Log.e("AI Error", "No valid moves available for AI")
+        }
     }
 
-    fun insertLetter(ch: Char, bestmove: Int) {
+    private fun setButtonTextSize(size: Float) {
+        val buttons = arrayOf(id0, id1, id2, id3, id4, id5, id6, id7, id8)
+        for (button in buttons) {
+            button.textSize = size
+        }
+    }
+
+
+    private fun insertLetter(ch: Char, bestmove: Int) {
         if (bestmove == 0) {
             id0.text = ch.toString()
         } else if (bestmove == 1) {
@@ -229,7 +245,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun minimax(isMax: Boolean): Int {
+
+
+    private fun minimax(isMax: Boolean): Int {
         Log.e("bestmove", "best move is calculating ")
         if (chekWhoWon(bot))
             return 1
@@ -271,7 +289,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun setClickable(isClickable: Boolean) {
+    private fun setClickable(isClickable: Boolean) {
         id0.isClickable = isClickable
         id1.isClickable = isClickable
         id2.isClickable = isClickable
@@ -282,6 +300,5 @@ class MainActivity : AppCompatActivity() {
         id7.isClickable = isClickable
         id8.isClickable = isClickable
     }
-
 
 }
